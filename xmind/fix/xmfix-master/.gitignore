@@ -1,0 +1,13 @@
+*.class
+build/
+bin/
+dist/
+xmfix.egg-info/
+
+# Package Files #
+*.pyc
+
+# Mac OS X Files #
+.DS_Store
+._*
+

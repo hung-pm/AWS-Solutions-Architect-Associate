@@ -1,0 +1,64 @@
+#!/usr/bin/env python
+
+__version__ = "0.0.1"
+__author__ = "Frank Shaka"
+
+import sys
+import logging
+
+from xmfixer import XMindFileFixer
+
+def print_help():
+    print >> sys.stderr, "A utility to fix damaged XMind files."
+    print >> sys.stderr, ""
+    print >> sys.stderr, "Usage: xmfix [OPTIONS] FILE_PATH [FILE_PATH2] ..."
+    print >> sys.stderr, ""
+    print >> sys.stderr, "FILE_PATH may be an intended XMind file, or a directory containing XMind file components."
+    print >> sys.stderr, ""
+    print >> sys.stderr, "Available options:"
+    print >> sys.stderr, "  --help       Print this help and exit"
+    print >> sys.stderr, "  --debug      Print debug information"
+    print >> sys.stderr, ""
+
+
+def main():
+    files = []
+    options = {}
+    
+    for arg in sys.argv[1:]:
+        if arg[0:2] == "--":
+            k, _, v = arg[2:].partition("=")
+            options[k] = v
+        else:
+            files.append(arg)
+    
+    if not files or "help" in options:
+        print_help()
+        sys.exit(1)
+
+    logging.basicConfig(
+        level=logging.DEBUG if "debug" in options else logging.INFO,
+        format="[%(asctime)s] %(levelname)8s: %(message)s", 
+        datefmt="%Y%m%d %H%M%S")
+    
+    fixed_files = []
+    failed_files = []
+    for file_path in files:
+        fixed_file = XMindFileFixer(file_path).fix()
+        if fixed_file:
+            fixed_files.append(fixed_file)
+        else:
+            failed_files.append(file_path)
+    
+    logging.warning("[xmfix] Total %s files, %s succeeded, %s failed.", len(files), len(fixed_files), len(failed_files))
+    if fixed_files:
+        logging.warning("[xmfix] Files succeeded to fix:")
+        for file_path in fixed_files:
+            logging.warning("[xmfix]     %s", file_path)
+    if failed_files:
+        logging.warning("[xmfix] Files failed to fix:")
+        for file_path in failed_files:
+            logging.warning("[xmfix]     %s", file_path)
+
+if __name__ == "__main__":
+    main()
